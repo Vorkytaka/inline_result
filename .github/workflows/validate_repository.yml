@@ -1,0 +1,62 @@
+name: Validate repository
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - '.github/**/*.yml'
+      - 'lib/**/*.dart'
+      - 'test/**/*.dart'
+      - 'pubspec.yaml'
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - '.github/**/*.yml'
+      - 'lib/**/*.dart'
+      - 'test/**/*.dart'
+      - 'pubspec.yaml'
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  unit-test:
+    name: Unit tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ] # Currently use Ubuntu only for optimization
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Get Flutter version
+        id: version
+        run: |
+          VERSION=$(jq --raw-output '.flutter' .fvmrc)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Clone & Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '${{ steps.version.outputs.version }}'
+          channel: 'stable'
+
+      - name: Check that flutter installed correct
+        run: flutter doctor -v
+
+      - name: Ensure the Dart code is formatted correctly
+        run: dart format --set-exit-if-changed .
+
+      - name: Check Dart analyze
+        run: dart analyze .
+
+      - name: Run Dart unit tests
+        run: dart test
