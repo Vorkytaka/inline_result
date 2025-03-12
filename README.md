@@ -6,10 +6,10 @@ This package brings a Kotlin-like `Result<T>` to Dart, using **extension types**
 
 ## ✨ Features
 
-✅ **Functional Error Handling** – Chain transformations without losing control.
-✅ **Zero-Cost Wrapping** – Uses Dart **extension types**, meaning no extra objects at runtime.
-✅ **Familiar API** – Inspired by Kotlin's `Result<T>`, but Dart-friendly.
-✅ **Safe & Readable** – No more `null` checks or exceptions hiding in logs.
+- ✅ **Functional Error Handling** – Chain transformations without losing control.
+- ✅ **Zero-Cost Wrapping** – Uses Dart **extension types**, meaning no extra objects at runtime.
+- ✅ **Familiar API** – Inspired by Kotlin's `Result<T>`, but Dart-friendly.
+- ✅ **Safe & Readable** – No more `null` checks or exceptions hiding in logs.
 
 ## Why Inline Result?
 
