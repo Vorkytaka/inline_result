@@ -1,7 +1,9 @@
 part of 'result.dart';
 
+/// Internal class representing a failed Result.
 @immutable
 class _Failure {
+  /// The exception encapsulated in this failure.
   final Exception exception;
 
   const _Failure(this.exception);

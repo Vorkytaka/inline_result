@@ -6,10 +6,10 @@ This package brings a Kotlin-like `Result<T>` to Dart, using **extension types**
 
 ## ✨ Features
 
-✅ **Functional Error Handling** – Chain transformations without losing control.
-✅ **Zero-Cost Wrapping** – Uses Dart **extension types**, meaning no extra objects at runtime.
-✅ **Familiar API** – Inspired by Kotlin's `Result<T>`, but Dart-friendly.
-✅ **Safe & Readable** – No more `null` checks or exceptions hiding in logs.
+- ✅ **Functional Error Handling** – Chain transformations without losing control.
+- ✅ **Zero-Cost Wrapping** – Uses Dart **extension types**, meaning no extra objects at runtime.
+- ✅ **Familiar API** – Inspired by Kotlin's `Result<T>`, but Dart-friendly.
+- ✅ **Safe & Readable** – No more `null` checks or exceptions hiding in logs.
 
 ## Why Inline Result?
 
@@ -20,6 +20,8 @@ Flutter/Dart lacks a built-in, functional way to handle errors like Kotlin. With
 - **Embrace immutability and safer coding practices**
 
 ## ⚡ Quick Comparison: Kotlin vs Dart
+
+### Kotlin
 
 ```kotlin
 fun divide(a: Int, b: Int): Result<Int> {
@@ -32,6 +34,8 @@ val result = divide(10, 2)
 
 println(result) // 10
 ```
+
+### Dart
 
 ```dart
 Result<int> divide(int a, int b) {
@@ -55,7 +59,7 @@ extension type Result<T>._(dynamic _value) { ... }
 ```
 
 With this, your `Result<T>` **doesn’t create an extra object**—it’s just a wrapper at compile-time.
-This means no **runtime overhead** and **native performance**. 🚀
+This means no **native performance** and **runtime overhead**. 🚀
 
 ## 🛠️ Usage Examples
 
