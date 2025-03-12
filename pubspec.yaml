@@ -2,6 +2,12 @@ name: inline_result
 description: This package brings a Kotlin-like Result<T> to Dart, using extension types for zero-cost wrapping.
 version: 1.0.0
 repository: https://github.com/Vorkytaka/inline_result
+issue_tracker: https://github.com/Vorkytaka/inline_result/issues
+topics:
+  - result
+  - inline
+  - either
+  - errors
 
 environment:
   sdk: ^3.3.0
