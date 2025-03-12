@@ -55,6 +55,9 @@ jobs:
       - name: Ensure the Dart code is formatted correctly
         run: dart format --set-exit-if-changed .
 
+      - name: Resolve dependencies
+        run: dart pub get
+
       - name: Check Dart analyze
         run: dart analyze .
 
