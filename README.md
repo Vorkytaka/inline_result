@@ -142,6 +142,7 @@ We conducted several benchmarks comparing three implementations of our `Result` 
 - **Inline Result** consistently shows excellent performance, matching the speed of the sealed implementation with in-place pattern matching.
 - All benchmarks were executed using **const** constructors. Notably, removing const constructors only further degrades the performance of the sealed with extensions implementation.
 - Benchmarks was run with AOT exe.
+- You can see benchmarks code at `bench` folder
 
 In summary, using inline classes provides the speed benefits of pattern matching while still offering convenient extension methods such as map, fold, and getOrNull.
 
