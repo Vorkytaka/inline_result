@@ -13,6 +13,10 @@ Result<T> runCatching<T>(Block<T> block) {
   }
 }
 
+/// Asynchronously executes [block] and wraps any thrown [Exception] in a [Result].
+///
+/// If [block] completes successfully, returns [Result.success] with the result.
+/// If [block] throws, returns [Result.failure] with the exception.
 Future<Result<T>> asyncRunCatching<T>(Future<T> Function() block) async {
   try {
     return Result.success(await block());
@@ -37,6 +41,10 @@ extension RunCatchingX<T> on T {
     }
   }
 
+  /// Asynchronously executes [block] and wraps any thrown [Exception] in a [Result].
+  ///
+  /// If [block] completes successfully, returns [Result.success] with the result.
+  /// If [block] throws, returns [Result.failure] with the exception.
   Future<Result<R>> asyncRunCatching<R>(
     Future<R> Function(T value) block,
   ) async {
