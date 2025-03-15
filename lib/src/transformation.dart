@@ -6,13 +6,14 @@ extension ResultTransformation<T> on Result<T> {
   ///
   /// If successful, returns a new Result with the transformed value.
   /// If failed, returns the original failure.
-  Result<R> map<R>(R Function(T value) transform) =>
-      isSuccess ? Result.success<R>(transform(_value as T)) : Result._(_value);
+  @pragma('vm:prefer-inline')
+  Result<R> map<R>(Transformer<T, R> transform) =>
+      isSuccess ? Result.success(transform(_value as T)) : Result._(_value);
 
   /// Transforms a successful value, catching exceptions from [transform].
   ///
   /// Similar to [map], but wraps any exceptions thrown by [transform] in a Result.
-  Result<R> mapCatching<R>(R Function(T value) transform) => isSuccess
-      ? Result.runCatching(() => transform(_value as T))
-      : Result._(_value);
+  @pragma('vm:prefer-inline')
+  Result<R> mapCatching<R>(Transformer<T, R> transform) =>
+      isSuccess ? runCatching(() => transform(_value as T)) : Result._(_value);
 }
