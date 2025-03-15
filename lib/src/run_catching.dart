@@ -13,6 +13,14 @@ Result<T> runCatching<T>(Block<T> block) {
   }
 }
 
+Future<Result<T>> asyncRunCatching<T>(Future<T> Function() block) async {
+  try {
+    return Result.success(await block());
+  } on Exception catch (exception, stacktrace) {
+    return Result.failure(exception, stacktrace);
+  }
+}
+
 /// Extension providing runCatching method for any value.
 extension RunCatchingX<T> on T {
   /// Executes [block] with current value as input
@@ -24,6 +32,16 @@ extension RunCatchingX<T> on T {
   Result<R> runCatching<R>(R Function(T value) block) {
     try {
       return Result.success(block(this));
+    } on Exception catch (exception, stacktrace) {
+      return Result.failure(exception, stacktrace);
+    }
+  }
+
+  Future<Result<R>> asyncRunCatching<R>(
+    Future<R> Function(T value) block,
+  ) async {
+    try {
+      return Result.success(await block(this));
     } on Exception catch (exception, stacktrace) {
       return Result.failure(exception, stacktrace);
     }
