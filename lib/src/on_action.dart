@@ -24,3 +24,19 @@ extension ResultOnActions<T> on Result<T> {
     return this;
   }
 }
+
+extension FutureResultOnActions<T> on Future<Result<T>> {
+  /// Executes [action] if this Result is a failure and returns itself.
+  ///
+  /// Useful for logging or handling failures without modifying the Result.
+  @pragma('vm:prefer-inline')
+  Future<Result<T>> onFailure(FailureTransformer<void> action) =>
+      then((result) => result.onFailure(action));
+
+  /// Executes [action] if this Result is successful and returns itself.
+  ///
+  /// Useful for processing successful values without modifying the Result.
+  @pragma('vm:prefer-inline')
+  Future<Result<T>> onSuccess(void Function(T value) action) =>
+      then((result) => result.onSuccess(action));
+}

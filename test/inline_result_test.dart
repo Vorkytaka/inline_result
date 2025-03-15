@@ -204,6 +204,61 @@ void main() {
       expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
     });
   });
+
+  group('FutureResult Extension', () {
+    test('asResult on successful future', () async {
+      final future = Future.value(42);
+      final result = await future.asResult;
+
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(42));
+    });
+
+    test('asResult on failing future with Exception', () async {
+      final future = Future<int>.error(Exception('Failure occurred'));
+      final result = await future.asResult;
+
+      expect(result.isFailure, isTrue);
+      expect(result.exceptionOrNull, isA<Exception>());
+      expect(result.exceptionOrNull.toString(), contains('Failure occurred'));
+    });
+
+    test('asResult on failing future with CustomException', () async {
+      final future = Future<int>.error(const CustomException('Custom failure'));
+      final result = await future.asResult;
+
+      expect(result.isFailure, isTrue);
+      expect(result.exceptionOrNull, isA<CustomException>());
+      expect(result.exceptionOrNull.toString(), contains('Custom failure'));
+    });
+
+    test('asResult on failing future with non-Exception error (ignored)',
+        () async {
+      final future = Future<int>.error('Non-exception error');
+      expect(future.asResult, throwsA(isA<String>()));
+    });
+
+    test('asResult on delayed success', () async {
+      final future = Future.delayed(const Duration(milliseconds: 50), () => 99);
+      final result = await future.asResult;
+
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(99));
+    });
+
+    test('asResult on delayed failure', () async {
+      final future = Future<int>.delayed(
+        const Duration(milliseconds: 50),
+        () => throw Exception('Delayed failure'),
+      );
+
+      final result = await future.asResult;
+
+      expect(result.isFailure, isTrue);
+      expect(result.exceptionOrNull, isA<Exception>());
+      expect(result.exceptionOrNull.toString(), contains('Delayed failure'));
+    });
+  });
 }
 
 class CustomException implements Exception {

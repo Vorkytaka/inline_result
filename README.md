@@ -92,6 +92,30 @@ final result = runCatching(() => int.parse("NaN"))
 print(result); // -1
 ```
 
+## 💤 Future Extensions
+
+You can easily handle asynchronous operations with our `Future` extensions. Convert a `Future<T>` into a `Future<Result<T>>` to chain transformations and error handling without verbose try/catch blocks.
+Or use `asyncRunCatching`.
+
+Example:
+```dart
+Future<Result<Post>> fetchPost() {
+  return http.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'))
+      .asResult()
+      .map(Post.fromJson);
+}
+
+Future<String> getCurrentTitle() {
+  return fetchPost()
+      .onFailure((exception, stacktrace) => print('$exception; $stacktrace'))
+      .recover((_, __) => 'Something went wrong')
+      .map((post) => post.title)
+      .getOrThrow;
+}
+```
+
+As you can see, we have repeated each extension method for `Future<Result<T>>` to make it easier for you to work with the results of asynchronous operations.
+
 ## ⁉️ Why does Result only catch Exceptions?
 
 The problem is that dart error system not perfect, `Error` and `Exception` does not have single parent.
