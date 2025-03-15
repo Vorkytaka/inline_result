@@ -123,6 +123,28 @@ And since `Error` is a class that should [not be caught](https://api.flutter.dev
 
 Feel free to implement `runErrorCatching` or `runObjectCatching` in your project and use it. 🔥
 
+## ⏲️ Benchmarks
+
+We conducted several benchmarks comparing three implementations of our `Result` type:
+
+- **Inline Result**: Our extension type implementation.
+- **Sealed with Extensions**: The sealed implementation using extension methods.
+- **Sealed with Pattern Matching**: The sealed implementation that leverages in-place pattern matching.
+
+| Method                       | Inline Result (us) | Sealed with Extensions (us) | Sealed with Pattern Matching (us) |
+|------------------------------|-|-|-|
+| getOrNull                    | 12.5148 | 81.8594 | 12.3652 |
+| map | 12.3678 | 131.572 | 12.3636 |
+| fold | 12.3604 | 91.9316 | 12.3607 |
+
+### Key Observations
+
+- **Inline Result** consistently shows excellent performance, matching the speed of the sealed implementation with in-place pattern matching.
+- All benchmarks were executed using **const** constructors. Notably, removing const constructors only further degrades the performance of the sealed with extensions implementation.
+- Benchmarks was run with AOT exe.
+
+In summary, using inline classes provides the speed benefits of pattern matching while still offering convenient extension methods such as map, fold, and getOrNull.
+
 ## ❤️ Contributing
 
 If you have ideas, improvements, or just want to say `Result.success("hello!")`, feel free to open an issue or PR!
