@@ -19,7 +19,7 @@ void main() {
   print(failure.getOrElse((e, st) => -1)); // Output: -1
 
   success.onSuccess((value) => print('Success: $value'));
-  failure.onFailure((error, stacktrace) => print('Error: $error'));
+  failure.onFailure((error, stacktrace) => print('Error: $error, $stacktrace'));
 
   final transformed = success.map((value) => 'Result: $value');
   print(transformed.getOrThrow); // Output: Result: 5

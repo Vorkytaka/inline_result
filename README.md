@@ -44,7 +44,7 @@ Result<int> divide(int a, int b) {
 
 final result = divide(10, 2)
     .map((value) => value * 2)
-    .getOrElse((_) => -1);
+    .getOrElse((e, st) => -1);
 
 print(result); // 10
 ```
@@ -87,7 +87,7 @@ print(result.getOrThrow); // 84
 
 ```dart
 final result = runCatching(() => int.parse("NaN"))
-    .getOrElse((e) => -1);
+    .getOrElse((e, st) => -1);
 
 print(result); // -1
 ```
