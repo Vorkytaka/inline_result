@@ -1,4 +1,3 @@
-// result_test.dart
 import 'package:inline_result/inline_result.dart';
 import 'package:test/test.dart';
 
@@ -134,6 +133,75 @@ void main() {
       expect(captured, isNotNull);
       expect(captured.toString(), contains('CustomException: F'));
       expect(identical(failure, resultAfter), isTrue);
+    });
+  });
+
+  group('Additional tests', () {
+    test('stacktraceOrNull on success returns null', () {
+      const success = Result.success('OK');
+      expect(success.stacktraceOrNull, isNull);
+    });
+
+    test('stacktraceOrNull on failure returns non-null', () {
+      // Use a non-const exception to increase the likelihood of a non-null stacktrace.
+      final result = Result.runCatching(() {
+        throw CustomException(DateTime.now().toIso8601String());
+      });
+      expect(result.isFailure, isTrue);
+      expect(result.stacktraceOrNull, isNotNull);
+    });
+
+    test('runCatching success', () {
+      final result = runCatching(() => 'OK');
+      expect(result.isSuccess, isTrue);
+      expect(result.isFailure, isFalse);
+      expect(result.getOrNull, equals('OK'));
+      expect(result.exceptionOrNull, isNull);
+      expect(result.getOrThrow, equals('OK'));
+      expect(result.getOrElse((_, __) => 'fail'), equals('OK'));
+      expect(result.getOrDefault('DEF'), equals('OK'));
+      expect(
+        result.fold(
+          onSuccess: (value) => 'V:$value',
+          onFailure: (e, st) => 'EX:$e',
+        ),
+        equals('V:OK'),
+      );
+    });
+
+    test('runCatching failure', () {
+      final result = runCatching(() => throw const CustomException('F'));
+      expect(result.isSuccess, isFalse);
+      expect(result.isFailure, isTrue);
+      expect(result.getOrNull, isNull);
+      expect(result.exceptionOrNull, isNotNull);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+      expect(
+        result.getOrElse((e, __) => 'EX:$e'),
+        startsWith('EX:CustomException: F'),
+      );
+      expect(result.getOrDefault('DEF'), equals('DEF'));
+      expect(
+        result.fold(
+          onSuccess: (value) => 'V:$value',
+          onFailure: (e, st) => 'EX:$e',
+        ),
+        startsWith('EX:CustomException: F'),
+      );
+    });
+
+    test('RunCatchingX extension method success', () {
+      final result = 5.runCatching((v) => v * 3);
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(15));
+    });
+
+    test('RunCatchingX extension method failure', () {
+      final result = 5.runCatching((v) {
+        throw const CustomException('error from RunCatchingX');
+      });
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
     });
   });
 }
