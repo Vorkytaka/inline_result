@@ -39,7 +39,7 @@ println(result) // 10
 
 ```dart
 Result<int> divide(int a, int b) {
-  return Result.runCatching(() => a ~/ b);
+  return runCatching(() => a ~/ b);
 }
 
 final result = divide(10, 2)
@@ -76,7 +76,7 @@ print(failure.getOrNull); // null
 ### 🔗 Chaining with map and recover
 
 ```dart
-final result = Result.runCatching(() => int.parse("42"))
+final result = runCatching(() => int.parse("42"))
     .map((value) => value * 2)
     .recover((_) => 0);
 
@@ -86,7 +86,7 @@ print(result.getOrThrow); // 84
 ### 🔥 Handling Failures Gracefully
 
 ```dart
-final result = Result.runCatching(() => int.parse("NaN"))
+final result = runCatching(() => int.parse("NaN"))
     .getOrElse((e) => -1);
 
 print(result); // -1
