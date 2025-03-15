@@ -22,7 +22,8 @@ void main() {
     });
 
     test('runCatching failure', () {
-      final result = Result.runCatching(() => throw const CustomException('F'));
+      final result =
+          runCatching<String>(() => throw const CustomException('F'));
       expect(result.isSuccess, isFalse);
       expect(result.isFailure, isTrue);
       expect(result.getOrNull, isNull);
@@ -170,7 +171,8 @@ void main() {
     });
 
     test('runCatching failure', () {
-      final result = runCatching(() => throw const CustomException('F'));
+      final result =
+          runCatching<String>(() => throw const CustomException('F'));
       expect(result.isSuccess, isFalse);
       expect(result.isFailure, isTrue);
       expect(result.getOrNull, isNull);
