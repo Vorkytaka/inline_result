@@ -6,11 +6,13 @@ extension ResultFold<T> on Result<T> {
   ///
   /// [onSuccess] handles successful values.
   /// [onFailure] handles exceptions.
+  @pragma('vm:prefer-inline')
   R fold<R>({
-    required R Function(T value) onSuccess,
-    required R Function(Exception exception) onFailure,
+    required Transformer<T, R> onSuccess,
+    required FailureTransformer<R> onFailure,
   }) {
-    final exception = exceptionOrNull;
-    return exception != null ? onFailure(exception) : onSuccess(_value as T);
+    return _value is _Failure
+        ? onFailure(_value.exception, _value.stacktrace)
+        : onSuccess(_value as T);
   }
 }
