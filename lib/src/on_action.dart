@@ -6,9 +6,9 @@ extension ResultOnActions<T> on Result<T> {
   ///
   /// Useful for logging or handling failures without modifying the Result.
   @pragma('vm:prefer-inline')
-  Result<T> onFailure(FailureTransformer<void> action) {
-    if (_value is _Failure) {
-      action(_value.exception, _value.stacktrace);
+  Result<T> onFailure<E extends Exception>(FailureTransformer<void, E> action) {
+    if (_value is _Failure && _value.exception is E) {
+      action(_value.exception as E, _value.stacktrace);
     }
     return this;
   }
@@ -30,8 +30,9 @@ extension FutureResultOnActions<T> on Future<Result<T>> {
   ///
   /// Useful for logging or handling failures without modifying the Result.
   @pragma('vm:prefer-inline')
-  Future<Result<T>> onFailure(FailureTransformer<void> action) =>
-      then((result) => result.onFailure(action));
+  Future<Result<T>> onFailure<E extends Exception>(
+          FailureTransformer<void, E> action) =>
+      then((result) => result.onFailure<E>(action));
 
   /// Executes [action] if this Result is successful and returns itself.
   ///

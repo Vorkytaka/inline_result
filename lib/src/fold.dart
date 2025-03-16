@@ -9,7 +9,7 @@ extension ResultFold<T> on Result<T> {
   @pragma('vm:prefer-inline')
   R fold<R>({
     required Transformer<T, R> onSuccess,
-    required FailureTransformer<R> onFailure,
+    required FailureTransformer<R, Exception> onFailure,
   }) =>
       _value is _Failure
           ? onFailure(_value.exception, _value.stacktrace)
@@ -25,7 +25,7 @@ extension FutureResultFold<T> on Future<Result<T>> {
   @pragma('vm:prefer-inline')
   Future<R> fold<R>({
     required Transformer<T, R> onSuccess,
-    required FailureTransformer<R> onFailure,
+    required FailureTransformer<R, Exception> onFailure,
   }) =>
       then((result) => result.fold(
             onSuccess: onSuccess,

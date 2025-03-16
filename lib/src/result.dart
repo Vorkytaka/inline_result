@@ -1,21 +1,29 @@
 import 'package:meta/meta.dart';
 
 part 'failure.dart';
+
 part 'fold.dart';
+
 part 'future.dart';
+
 part 'getter.dart';
+
 part 'on_action.dart';
+
 part 'or.dart';
+
 part 'recover.dart';
+
 part 'run_catching.dart';
+
 part 'transformation.dart';
 
 /// Transform success [value] into new value of [R].
 typedef Transformer<T, R> = R Function(T value);
 
 /// Transform failure result from [exception] and optional [stacktrace] into new value of [R].
-typedef FailureTransformer<R> = R Function(
-  Exception exception,
+typedef FailureTransformer<R, E extends Exception> = R Function(
+  E exception,
   StackTrace? stacktrace,
 );
 
