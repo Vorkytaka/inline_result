@@ -91,6 +91,24 @@ void main() {
       expect(recovered.getOrThrow, equals(42));
     });
 
+    test('recover with specific exception type', () {
+      bool isFormatCalled = false;
+      bool isCustomCalled = false;
+      final res = runCatching<int>(() {
+        throw const FormatException();
+      }).recover<FormatException>((_, __) {
+        isFormatCalled = true;
+        return 1;
+      }).recover<CustomException>((_, __) {
+        isCustomCalled = true;
+        return 2;
+      });
+
+      expect(res, 1);
+      expect(isFormatCalled, isTrue);
+      expect(isCustomCalled, isFalse);
+    });
+
     test('recover on success returns original value', () {
       const success = Result<int>.success(10);
       final recovered = success.recover((e, _) => 42);

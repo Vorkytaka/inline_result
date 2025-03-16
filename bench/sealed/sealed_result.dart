@@ -91,7 +91,7 @@ extension SealedResultExt<T> on SealedResult<T> {
 
   R fold<R>({
     required Transformer<T, R> onSuccess,
-    required FailureTransformer<R> onFailure,
+    required FailureTransformer<R, Exception> onFailure,
   }) {
     final current = this;
     return switch (current) {
