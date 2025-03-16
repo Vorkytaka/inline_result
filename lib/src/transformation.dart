@@ -8,14 +8,15 @@ extension ResultTransformation<T> on Result<T> {
   /// If failed, returns the original failure.
   @pragma('vm:prefer-inline')
   Result<R> map<R>(Transformer<T, R> transform) =>
-      isSuccess ? Result.success(transform(_value as T)) : Result._(_value);
+      isSuccess ? Result.success(transform(_value as T)) : Result<R>._(_value);
 
   /// Transforms a successful value, catching exceptions from [transform].
   ///
   /// Similar to [map], but wraps any exceptions thrown by [transform] in a Result.
   @pragma('vm:prefer-inline')
-  Result<R> mapCatching<R>(Transformer<T, R> transform) =>
-      isSuccess ? runCatching(() => transform(_value as T)) : Result._(_value);
+  Result<R> mapCatching<R>(Transformer<T, R> transform) => isSuccess
+      ? runCatching(() => transform(_value as T))
+      : Result<R>._(_value);
 }
 
 extension FutureResultTransformation<T> on Future<Result<T>> {

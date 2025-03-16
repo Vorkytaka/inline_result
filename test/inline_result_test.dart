@@ -71,12 +71,15 @@ void main() {
     });
 
     test('map on failure should propagate failure', () {
-      final failure = Result<int>.failure(const CustomException('F'));
+      final failure =
+          Result<int>.failure(const CustomException('F'), StackTrace.empty);
       final mapped = failure.map<int>((v) => v * 2);
       expect(mapped.isFailure, isTrue);
+      expect(mapped.stacktraceOrNull, isNotNull);
 
       final mappedCatching = failure.mapCatching<int>((v) => v * 2);
       expect(mappedCatching.isFailure, isTrue);
+      expect(mappedCatching.stacktraceOrNull, isNotNull);
     });
   });
 
