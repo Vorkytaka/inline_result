@@ -264,6 +264,48 @@ void main() {
       expect(result.exceptionOrNull.toString(), contains('Delayed failure'));
     });
   });
+
+  group('flatMap', () {
+    test('flatMap on success applies transform and returns new result', () {
+      // Given a successful result with value 10.
+      const success = Result.success(10);
+      // When flatMap applies a transform returning a new success.
+      final result = success.flatMap((v) => Result.success(v * 2));
+      // Then the new result should be successful with value 20.
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(20));
+    });
+
+    test('flatMap on success propagates failure returned by transform', () {
+      // Given a successful result with value 10.
+      const success = Result.success(10);
+      // When flatMap applies a transform that returns a failure.
+      final result = success.flatMap<int>(
+        (v) => Result.failure(const CustomException('flat failure')),
+      );
+      // Then the new result should be a failure.
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+    });
+
+    test(
+        'flatMap on failure propagates original failure without calling transform',
+        () {
+      // Given a failed result.
+      final failure =
+          Result<int>.failure(const CustomException('original failure'));
+      var transformCalled = false;
+      // When flatMap is invoked; the transform should not be executed.
+      final result = failure.flatMap((v) {
+        transformCalled = true;
+        return Result.success(v * 2);
+      });
+      // Then the result remains the original failure.
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+      expect(transformCalled, isFalse);
+    });
+  });
 }
 
 class CustomException implements Exception {
