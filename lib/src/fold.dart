@@ -24,11 +24,10 @@ extension FutureResultFold<T> on Future<Result<T>> {
   /// [onFailure] handles exceptions.
   @pragma('vm:prefer-inline')
   Future<R> fold<R>({
-    required Transformer<T, R> onSuccess,
-    required FailureTransformer<R, Exception> onFailure,
+    required AsyncTransformer<T, R> onSuccess,
+    required AsyncFailureTransformer<R, Exception> onFailure,
   }) =>
-      then((result) => result.fold(
-            onSuccess: onSuccess,
-            onFailure: onFailure,
-          ));
+      then((result) => result._value is _Failure
+          ? onFailure(result._value.exception, result._value.stacktrace)
+          : onSuccess(result._value));
 }

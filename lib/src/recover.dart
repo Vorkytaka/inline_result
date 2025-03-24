@@ -18,10 +18,13 @@ extension ResultRecover<T> on Result<T> {
   /// Similar to [recover], but wraps any exceptions thrown by [transform] in a [Result].
   @pragma('vm:prefer-inline')
   Result<T> recoverCatching<E extends Exception>(
-          FailureTransformer<T, E> transform) =>
+    FailureTransformer<T, E> transform,
+  ) =>
       _value is _Failure && _value.exception is E
-          ? Result.runCatching(
-              () => transform(_value.exception as E, _value.stacktrace))
+          ? runCatching(() => transform(
+                _value.exception as E,
+                _value.stacktrace,
+              ))
           : this;
 }
 
@@ -34,14 +37,26 @@ extension FutureResultRecover<T> on Future<Result<T>> {
   /// If successful, returns the original [Result].
   @pragma('vm:prefer-inline')
   Future<Result<T>> recover<E extends Exception>(
-          FailureTransformer<T, E> transform) =>
-      then((result) => result.recover<E>(transform));
+    AsyncFailureTransformer<T, E> transform,
+  ) =>
+      then((result) async =>
+          result._value is _Failure && result._value.exception is E
+              ? Result.success(await transform(
+                  result._value.exception as E,
+                  result._value.stacktrace,
+                ))
+              : result);
 
   /// Transforms a failure into a success, catching exceptions from [transform].
   ///
   /// Similar to [recover], but wraps any exceptions thrown by [transform] in a [Result].
   @pragma('vm:prefer-inline')
   Future<Result<T>> recoverCatching<E extends Exception>(
-          FailureTransformer<T, E> transform) =>
-      then((result) => result.recoverCatching<E>(transform));
+          AsyncFailureTransformer<T, E> transform) =>
+      then((result) => result._value is _Failure && result._value.exception is E
+          ? transform(
+              result._value.exception as E,
+              result._value.stacktrace,
+            ).asResult
+          : result);
 }

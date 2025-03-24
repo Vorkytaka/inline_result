@@ -17,7 +17,7 @@ extension ResultOnActions<T> on Result<T> {
   ///
   /// Useful for processing successful values without modifying the Result.
   @pragma('vm:prefer-inline')
-  Result<T> onSuccess(void Function(T value) action) {
+  Result<T> onSuccess(Transformer<T, void> action) {
     if (_value is T) {
       action(_value);
     }

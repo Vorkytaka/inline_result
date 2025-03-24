@@ -18,8 +18,13 @@ extension ResultOr<T> on Result<T> {
 extension FutureResultOr<T> on Future<Result<T>> {
   /// Returns the value if successful, otherwise applies [onFailure].
   @pragma('vm:prefer-inline')
-  Future<T> getOrElse(FailureTransformer<T, Exception> onFailure) =>
-      then((result) => result.getOrElse(onFailure));
+  Future<T> getOrElse(AsyncFailureTransformer<T, Exception> onFailure) =>
+      then((result) => result._value is _Failure
+          ? onFailure(
+              result._value.exception,
+              result._value.stacktrace,
+            )
+          : result._value as T);
 
   /// Returns the value if successful, otherwise [defaultValue].
   @pragma('vm:prefer-inline')

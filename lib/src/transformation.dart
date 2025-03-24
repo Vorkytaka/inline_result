@@ -38,8 +38,10 @@ extension FutureResultTransformation<T> on Future<Result<T>> {
   /// If successful, returns a new Result with the transformed value.
   /// If failed, returns the original failure.
   @pragma('vm:prefer-inline')
-  Future<Result<R>> map<R>(Transformer<T, R> transform) =>
-      then((result) => result.map(transform));
+  Future<Result<R>> map<R>(AsyncTransformer<T, R> transform) =>
+      then((result) async => result._value is _Failure
+          ? Result<R>._(result._value)
+          : Result.success(await transform(result._value)));
 
   /// Transforms a successful value, catching exceptions from [transform].
   ///

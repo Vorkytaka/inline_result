@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:inline_result/inline_result.dart';
 import 'package:test/test.dart';
 
@@ -322,6 +324,228 @@ void main() {
       expect(result.isFailure, isTrue);
       expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
       expect(transformCalled, isFalse);
+    });
+  });
+
+  group('FutureResultFold', () {
+    test('fold on successful future', () async {
+      final futureResult = Future.value(const Result.success(10));
+      final folded = await futureResult.fold(
+        onSuccess: (v) async => v * 2,
+        onFailure: (e, st) async => 0,
+      );
+      expect(folded, equals(20));
+    });
+
+    test('fold on failing future', () async {
+      final futureResult =
+      Future.value(Result<int>.failure(const CustomException('fail')));
+      final folded = await futureResult.fold(
+        onSuccess: (v) async => v * 2,
+        onFailure: (e, st) async => -1,
+      );
+      expect(folded, equals(-1));
+    });
+  });
+
+  group('FutureResultGetter', () {
+    test('getOrNull on successful future', () async {
+      final result = await Future.value(const Result.success('OK')).getOrNull;
+      expect(result, equals('OK'));
+    });
+
+    test('exceptionOrNull on failure future', () async {
+      final result =
+      await Future.value(Result<String>.failure(const CustomException('err')))
+          .exceptionOrNull;
+      expect(result.toString(), contains('CustomException: err'));
+    });
+
+    test('stacktraceOrNull on failure future returns non-null', () async {
+      final result = await Future.value(
+          Result<String>.failure(const CustomException('err'), StackTrace.current))
+          .stacktraceOrNull;
+      expect(result, isNotNull);
+    });
+
+    test('getOrThrow on successful future', () async {
+      final result = await Future.value(const Result.success(42)).getOrThrow;
+      expect(result, equals(42));
+    });
+
+    test('getOrThrow on failure future throws', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      expect(() async => future.getOrThrow, throwsA(isA<CustomException>()));
+    });
+  });
+
+  group('FutureResultOnActions', () {
+    test('onSuccess executes action on success', () async {
+      int? captured;
+      final result = await Future.value(const Result.success(5))
+          .onSuccess((v) => captured = v);
+      expect(captured, equals(5));
+      expect(result.getOrThrow, equals(5));
+    });
+
+    test('onFailure executes action on failure', () async {
+      Object? captured;
+      final result = await Future.value(Result<int>.failure(const CustomException('fail')))
+          .onFailure((e, st) => captured = e);
+      expect(captured, isNotNull);
+      expect(captured.toString(), contains('CustomException: fail'));
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+    });
+  });
+
+  group('FutureResultOr', () {
+    test('getOrElse returns value on success', () async {
+      final future = Future.value(const Result.success(10));
+      final value = await future.getOrElse((e, st) async => 0);
+      expect(value, equals(10));
+    });
+
+    test('getOrElse returns fallback on failure', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      final value = await future.getOrElse((e, st) async => 99);
+      expect(value, equals(99));
+    });
+
+    test('getOrDefault returns value on success', () async {
+      final future = Future.value(const Result.success(10));
+      final value = await future.getOrDefault(100);
+      expect(value, equals(10));
+    });
+
+    test('getOrDefault returns default on failure', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      final value = await future.getOrDefault(100);
+      expect(value, equals(100));
+    });
+  });
+
+  group('FutureResultRecover', () {
+    test('recover on future failure transforms to success', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      final recovered = await future.recover((e, st) async => 55);
+      expect(recovered.isSuccess, isTrue);
+      expect(recovered.getOrThrow, equals(55));
+    });
+
+    test('recover on future success returns original value', () async {
+      final future = Future.value(const Result.success(77));
+      final recovered = await future.recover((e, st) async => 55);
+      expect(recovered.isSuccess, isTrue);
+      expect(recovered.getOrThrow, equals(77));
+    });
+
+    test('recoverCatching on future failure transforms to success', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      final recovered = await future.recoverCatching((e, st) async => 88);
+      expect(recovered.isSuccess, isTrue);
+      expect(recovered.getOrThrow, equals(88));
+    });
+
+    test('recoverCatching on future failure catches exception from transform', () async {
+      final future = Future.value(Result<int>.failure(const CustomException('fail')));
+      final recovered = await future.recoverCatching(
+              (e, st) async => throw const CustomException('recovery fail'));
+      expect(recovered.isFailure, isTrue);
+      expect(() => recovered.getOrThrow, throwsA(isA<CustomException>()));
+    });
+
+    test('recoverCatching on future success returns original value', () async {
+      final future = Future.value(const Result.success(99));
+      final recovered = await future.recoverCatching((e, st) async => 77);
+      expect(recovered.isSuccess, isTrue);
+      expect(recovered.getOrThrow, equals(99));
+    });
+  });
+
+  group('asyncRunCatching', () {
+    test('asyncRunCatching returns success for successful block', () async {
+      final result = await asyncRunCatching(() async => 'async OK');
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals('async OK'));
+    });
+
+    test('asyncRunCatching returns failure for throwing block', () async {
+      final result = await asyncRunCatching(() async => throw const CustomException('async fail'));
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+    });
+  });
+
+  group('FutureOrResult', () {
+    test('asResult on synchronous value', () async {
+      final result = await (42 as FutureOr<int>).asResult;
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(42));
+    });
+
+    test('asResult on failure using Future.sync', () async {
+      final result = await Future.sync(() => throw const CustomException('sync error')).asResult;
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+    });
+  });
+
+  group('RunCatchingX asyncRunCatching', () {
+    test('asyncRunCatching on value succeeds', () async {
+      final result = await 10.asyncRunCatching((v) async => v + 5);
+      expect(result.isSuccess, isTrue);
+      expect(result.getOrThrow, equals(15));
+    });
+
+    test('asyncRunCatching on value fails', () async {
+      final result = await 10.asyncRunCatching<int>(
+              (v) async => throw const CustomException('run async fail'));
+      expect(result.isFailure, isTrue);
+      expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
+    });
+  });
+
+  group('FutureResultTransformation', () {
+    test('map transforms future result on success', () async {
+      final future = Future.value(const Result.success(5));
+      final mapped = await future.map((v) async => v * 4);
+      expect(mapped.isSuccess, isTrue);
+      expect(mapped.getOrThrow, equals(20));
+    });
+
+    test('map propagates failure without transformation', () async {
+      final future =
+      Future.value(Result<int>.failure(const CustomException('fail')));
+      final mapped = await future.map<int>((v) async => v * 4);
+      expect(mapped.isFailure, isTrue);
+    });
+
+    test('mapCatching transforms future result on success', () async {
+      final future = Future.value(const Result.success(3));
+      final mapped = await future.mapCatching((v) => v + 7);
+      expect(mapped.isSuccess, isTrue);
+      expect(mapped.getOrThrow, equals(10));
+    });
+
+    test('mapCatching catches exception in transformation', () async {
+      final future = Future.value(const Result.success(3));
+      final mapped = await future.mapCatching<int>((v) => throw const CustomException('map async fail'));
+      expect(mapped.isFailure, isTrue);
+      expect(() => mapped.getOrThrow, throwsA(isA<CustomException>()));
+    });
+
+    test('flatMap on future result applies transformation on success', () async {
+      final future = Future.value(const Result.success(8));
+      final flatMapped = await future.flatMap((v) => Result.success(v - 3));
+      expect(flatMapped.isSuccess, isTrue);
+      expect(flatMapped.getOrThrow, equals(5));
+    });
+
+    test('flatMap on future result propagates failure from transform', () async {
+      final future = Future.value(const Result.success(8));
+      final flatMapped = await future.flatMap<int>(
+              (v) => Result.failure(const CustomException('flatMap fail')));
+      expect(flatMapped.isFailure, isTrue);
     });
   });
 }

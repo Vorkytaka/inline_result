@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 
 part 'failure.dart';
@@ -21,8 +23,15 @@ part 'transformation.dart';
 /// Transform success [value] into new value of [R].
 typedef Transformer<T, R> = R Function(T value);
 
+typedef AsyncTransformer<T, R> = FutureOr<R> Function(T value);
+
 /// Transform failure result from [exception] and optional [stacktrace] into new value of [R].
 typedef FailureTransformer<R, E extends Exception> = R Function(
+  E exception,
+  StackTrace? stacktrace,
+);
+
+typedef AsyncFailureTransformer<R, E extends Exception> = FutureOr<R> Function(
   E exception,
   StackTrace? stacktrace,
 );
