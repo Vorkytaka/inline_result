@@ -27,3 +27,13 @@ extension FutureResult<T> on Future<T> {
   Future<Result<T>> get asResult =>
       then(Result.success).onError<Exception>(Result<T>.failure);
 }
+
+extension FutureOrResult<T> on FutureOr<T> {
+  FutureOr<Result<T>> get asResult async {
+    try {
+      return Result.success(await this);
+    } on Exception catch (e, st) {
+      return Result.failure(e, st);
+    }
+  }
+}
