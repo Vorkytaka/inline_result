@@ -1,3 +1,10 @@
+## 2.0.0
+
+- Breaking Changes
+  - Better async API
+  - All async methods now handle `FutureOr<T>` instead of `T`
+- `Result.runCatching` deprecated
+
 ## 1.2.0
 
 - Add `flatMap`
