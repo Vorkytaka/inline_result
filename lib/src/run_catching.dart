@@ -40,16 +40,19 @@ extension RunCatchingX<T> on T {
       return Result.failure(exception, stacktrace);
     }
   }
+}
 
+/// Extension providing asyncRunCatching method for any Future.
+extension FutureRunCatchingX<T> on Future<T> {
   /// Asynchronously executes [block] and wraps any thrown [Exception] in a [Result].
   ///
   /// If [block] completes successfully, returns [Result.success] with the result.
   /// If [block] throws, returns [Result.failure] with the exception.
   Future<Result<R>> asyncRunCatching<R>(
-    Future<R> Function(T value) block,
+    FutureOr<R> Function(T value) block,
   ) async {
     try {
-      return Result.success(await block(this));
+      return Result.success(await block(await this));
     } on Exception catch (exception, stacktrace) {
       return Result.failure(exception, stacktrace);
     }

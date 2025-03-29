@@ -52,7 +52,8 @@ extension FutureResultRecover<T> on Future<Result<T>> {
   /// Similar to [recover], but wraps any exceptions thrown by [transform] in a [Result].
   @pragma('vm:prefer-inline')
   Future<Result<T>> recoverCatching<E extends Exception>(
-          AsyncFailureTransformer<T, E> transform) =>
+    AsyncFailureTransformer<T, E> transform,
+  ) =>
       then((result) => result._value is _Failure && result._value.exception is E
           ? transform(
               result._value.exception as E,

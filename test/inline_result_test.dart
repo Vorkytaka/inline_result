@@ -217,7 +217,7 @@ void main() {
 
     test('asyncRunCatching extension returns success for async block',
         () async {
-      final result = await 10.asyncRunCatching((v) async => v + 5);
+      final result = await Future.value(10).asyncRunCatching((v) => v + 5);
       expect(result.isSuccess, isTrue);
       expect(result.getOrThrow, equals(15));
     });
@@ -225,8 +225,8 @@ void main() {
     test(
         'asyncRunCatching extension returns failure for async block throwing error',
         () async {
-      final result = await 10.asyncRunCatching<int>(
-          (v) async => throw const CustomException('run async fail'));
+      final result = await Future.value(10).asyncRunCatching<int>(
+          (v) => throw const CustomException('run async fail'));
       expect(result.isFailure, isTrue);
       expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
     });
