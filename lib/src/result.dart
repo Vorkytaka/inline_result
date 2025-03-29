@@ -57,6 +57,7 @@ extension type const Result<T>._(dynamic _value) {
   ///
   /// If [block] completes successfully, returns [Result.success] with the result.
   /// If [block] throws, returns [Result.failure] with the exception.
+  @Deprecated('Will be removed. Use global function runCatching instead.')
   @pragma('vm:prefer-inline')
   static Result<T> runCatching<T>(Block<T> block) {
     try {

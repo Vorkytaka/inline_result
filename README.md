@@ -55,7 +55,7 @@ Kotlin's `Result<T>` is an [inline class](https://kotlinlang.org/docs/inline-cla
 Dart doesn’t have inline classes, but [extension types](https://dart.dev/language/extension-types) do something similar:
 
 ```dart
-extension type Result<T>._(dynamic _value) { ... }
+extension type Result<T>(T _value) { ... }
 ```
 
 With this, your `Result<T>` **doesn’t create an extra object**—it’s just a wrapper at compile-time.
@@ -87,7 +87,7 @@ print(result.getOrThrow); // 84
 
 ```dart
 final result = runCatching(() => int.parse("NaN"))
-    .getOrElse((e, st) => -1);
+    .getOrDefault(-1);
 
 print(result); // -1
 ```
@@ -108,8 +108,8 @@ Future<Result<Post>> fetchPost() {
 Future<String> getCurrentTitle() {
   return fetchPost()
       .onFailure((exception, stacktrace) => print('$exception; $stacktrace'))
-      .recover((_, __) => 'Something went wrong')
       .map((post) => post.title)
+      .recover((_, __) => 'Something went wrong')
       .getOrThrow;
 }
 ```
