@@ -1,3 +1,5 @@
+// ignore_for_file: null_check_on_nullable_type_parameter
+
 import 'package:inline_result/inline_result.dart';
 
 extension type RecordResult<T>._((T? value, Exception? exception) _value) {

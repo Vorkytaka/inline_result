@@ -24,15 +24,15 @@ extension FutureResult<T> on Future<T> {
   ///
   /// - If the [Future] completes successfully, wraps the value in [Result.success].
   /// - If the [Future] completes with an [Exception], wraps the exception in [Result.failure].
-  Future<Result<T>> get asResult =>
-      then(Result.success).onError<Exception>(Result<T>.failure);
+  Future<Result<T, F>> asResult<F extends Object>() =>
+      then(Result<T, F>.success).onError<F>(Result<T, F>.failure);
 }
 
 extension FutureOrResult<T> on FutureOr<T> {
-  FutureOr<Result<T>> get asResult async {
+  FutureOr<Result<T, F>> asResult<F extends Object>() async {
     try {
       return Result.success(await this);
-    } on Exception catch (e, st) {
+    } on F catch (e, st) {
       return Result.failure(e, st);
     }
   }

@@ -5,10 +5,10 @@ part of 'result.dart';
 /// If [block] completes successfully, returns [Result.success] with the result.
 /// If [block] throws, returns [Result.failure] with the exception.
 @pragma('vm:prefer-inline')
-Result<T> runCatching<T>(Block<T> block) {
+Result<T, F> runCatching<T, F extends Object>(Block<T> block) {
   try {
     return Result.success(block());
-  } on Exception catch (exception, stacktrace) {
+  } on F catch (exception, stacktrace) {
     return Result.failure(exception, stacktrace);
   }
 }
@@ -17,10 +17,12 @@ Result<T> runCatching<T>(Block<T> block) {
 ///
 /// If [block] completes successfully, returns [Result.success] with the result.
 /// If [block] throws, returns [Result.failure] with the exception.
-Future<Result<T>> asyncRunCatching<T>(Future<T> Function() block) async {
+Future<Result<T, F>> asyncRunCatching<T, F extends Object>(
+  Future<T> Function() block,
+) async {
   try {
     return Result.success(await block());
-  } on Exception catch (exception, stacktrace) {
+  } on F catch (exception, stacktrace) {
     return Result.failure(exception, stacktrace);
   }
 }
@@ -33,10 +35,10 @@ extension RunCatchingX<T> on T {
   /// If [block] completes successfully, returns [Result.success] with the result.
   /// If [block] throws, returns [Result.failure] with the exception.
   @pragma('vm:prefer-inline')
-  Result<R> runCatching<R>(R Function(T value) block) {
+  Result<R, F> runCatching<R, F extends Object>(R Function(T value) block) {
     try {
       return Result.success(block(this));
-    } on Exception catch (exception, stacktrace) {
+    } on F catch (exception, stacktrace) {
       return Result.failure(exception, stacktrace);
     }
   }
@@ -48,12 +50,12 @@ extension FutureRunCatchingX<T> on Future<T> {
   ///
   /// If [block] completes successfully, returns [Result.success] with the result.
   /// If [block] throws, returns [Result.failure] with the exception.
-  Future<Result<R>> asyncRunCatching<R>(
+  Future<Result<R, F>> asyncRunCatching<R, F extends Object>(
     FutureOr<R> Function(T value) block,
   ) async {
     try {
       return Result.success(await block(await this));
-    } on Exception catch (exception, stacktrace) {
+    } on F catch (exception, stacktrace) {
       return Result.failure(exception, stacktrace);
     }
   }
