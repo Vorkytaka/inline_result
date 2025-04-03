@@ -2,9 +2,9 @@ part of 'result.dart';
 
 /// Internal class representing a failed Result.
 @immutable
-class _Failure {
+class _Failure<F extends Object> {
   /// The exception encapsulated in this failure.
-  final Exception exception;
+  final F exception;
 
   /// Optional stacktrace of this failure.
   final StackTrace? stacktrace;

@@ -2,7 +2,7 @@
 
 import 'package:inline_result/inline_result.dart';
 
-Result<int> divide(int a, int b) {
+Result<int, Object> divide(int a, int b) {
   return runCatching(() {
     if (b == 0) {
       throw Exception('Division by zero');

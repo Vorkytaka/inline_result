@@ -9,7 +9,7 @@ void main() {
   //
   group('Synchronous Result Tests', () {
     test('runCatching returns success when block succeeds', () {
-      final result = Result.runCatching(() => 'OK');
+      final result = runCatching(() => 'OK');
       expect(result.isSuccess, isTrue);
       expect(result.isFailure, isFalse);
       expect(result.getOrNull, equals('OK'));
@@ -27,8 +27,8 @@ void main() {
     });
 
     test('runCatching returns failure when block throws', () {
-      final result =
-          runCatching<String>(() => throw const CustomException('F'));
+      final result = runCatching<String, Exception>(
+          () => throw const CustomException('F'));
       expect(result.isSuccess, isFalse);
       expect(result.isFailure, isTrue);
       expect(result.getOrNull, isNull);
@@ -55,7 +55,8 @@ void main() {
     });
 
     test('constructed failure result throws on getOrThrow', () {
-      final result = Result<String>.failure(const CustomException('F'));
+      final result =
+          Result<String, Exception>.failure(const CustomException('F'));
       expect(result.isFailure, isTrue);
       expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
     });
@@ -78,8 +79,8 @@ void main() {
     });
 
     test('map on failure propagates the original failure', () {
-      final failure =
-          Result<int>.failure(const CustomException('F'), StackTrace.empty);
+      final failure = Result<int, Exception>.failure(
+          const CustomException('F'), StackTrace.empty);
       final mapped = failure.map<int>((v) => v * 2);
       expect(mapped.isFailure, isTrue);
       expect(mapped.stacktraceOrNull, isNotNull);
@@ -104,8 +105,8 @@ void main() {
       expect(() => flatFailure.getOrThrow, throwsA(isA<CustomException>()));
 
       // flatMap on failure should not execute the transformation.
-      final originalFailure =
-          Result<int>.failure(const CustomException('original failure'));
+      final originalFailure = Result<int, Exception>.failure(
+          const CustomException('original failure'));
       var transformCalled = false;
       final propagated = originalFailure.flatMap((v) {
         transformCalled = true;
@@ -118,7 +119,8 @@ void main() {
 
     test('recover and recoverCatching work as expected', () {
       // recover transforms failure to success.
-      final failure = Result<int>.failure(const CustomException('F'));
+      final failure =
+          Result<int, Exception>.failure(const CustomException('F'));
       final recovered = failure.recover((e, _) => 42);
       expect(recovered.isSuccess, isTrue);
       expect(recovered.getOrThrow, equals(42));
@@ -126,7 +128,7 @@ void main() {
       // recover with specific exception type.
       bool isFormatCalled = false;
       bool isCustomCalled = false;
-      final res = runCatching<int>(() {
+      final res = runCatching<int, Exception>(() {
         throw const FormatException();
       }).recover<FormatException>((_, __) {
         isFormatCalled = true;
@@ -140,19 +142,21 @@ void main() {
       expect(isCustomCalled, isFalse);
 
       // recover on a success should return the original value.
-      const success = Result<int>.success(10);
+      const success = Result<int, Exception>.success(10);
       final recovSuccess = success.recover((e, _) => 42);
       expect(recovSuccess.isSuccess, isTrue);
       expect(recovSuccess.getOrThrow, equals(10));
 
       // recoverCatching transforms failure to success.
-      final failure2 = Result<int>.failure(const CustomException('F'));
+      final failure2 =
+          Result<int, Exception>.failure(const CustomException('F'));
       final recoveredCatching = failure2.recoverCatching((e, _) => 42);
       expect(recoveredCatching.isSuccess, isTrue);
       expect(recoveredCatching.getOrThrow, equals(42));
 
       // recoverCatching catches exception thrown in the recovery transform.
-      final failure3 = Result<int>.failure(const CustomException('F'));
+      final failure3 =
+          Result<int, Exception>.failure(const CustomException('F'));
       final recoveredCatchingFail = failure3.recoverCatching(
           (e, _) => throw const CustomException('recoverFail'));
       expect(recoveredCatchingFail.isFailure, isTrue);
@@ -160,7 +164,7 @@ void main() {
           throwsA(isA<CustomException>()));
 
       // recoverCatching on a success returns the original value.
-      final success2 = Result.success(10);
+      const success2 = Result.success(10);
       final recoveredCatchingSuccess = success2.recoverCatching((e, _) => 42);
       expect(recoveredCatchingSuccess.isSuccess, isTrue);
       expect(recoveredCatchingSuccess.getOrThrow, equals(10));
@@ -174,7 +178,8 @@ void main() {
       expect(identical(successResult, afterSuccess), isTrue);
 
       Object? failureCapture;
-      final failureResult = Result<int>.failure(const CustomException('F'));
+      final failureResult =
+          Result<int, Exception>.failure(const CustomException('F'));
       final afterFailure =
           failureResult.onFailure((e, _) => failureCapture = e);
       expect(failureCapture, isNotNull);
@@ -187,7 +192,7 @@ void main() {
       expect(successResult.stacktraceOrNull, isNull);
 
       // For a failure, the stacktrace should be non-null.
-      final failureResult = Result.runCatching(() {
+      final failureResult = runCatching(() {
         throw CustomException(DateTime.now().toIso8601String());
       });
       expect(failureResult.isFailure, isTrue);
@@ -225,7 +230,7 @@ void main() {
     test(
         'asyncRunCatching extension returns failure for async block throwing error',
         () async {
-      final result = await Future.value(10).asyncRunCatching<int>(
+      final result = await Future.value(10).asyncRunCatching<int, Exception>(
           (v) => throw const CustomException('run async fail'));
       expect(result.isFailure, isTrue);
       expect(() => result.getOrThrow, throwsA(isA<CustomException>()));
@@ -238,14 +243,14 @@ void main() {
   group('Future Result Tests', () {
     test('asResult converts successful future to success', () async {
       final future = Future.value(42);
-      final result = await future.asResult;
+      final result = await future.asResult();
       expect(result.isSuccess, isTrue);
       expect(result.getOrThrow, equals(42));
     });
 
     test('asResult converts failing future (Exception) to failure', () async {
       final future = Future<int>.error(Exception('Failure occurred'));
-      final result = await future.asResult;
+      final result = await future.asResult();
       expect(result.isFailure, isTrue);
       expect(result.exceptionOrNull, isA<Exception>());
       expect(result.exceptionOrNull.toString(), contains('Failure occurred'));
@@ -254,7 +259,7 @@ void main() {
     test('asResult converts failing future (CustomException) to failure',
         () async {
       final future = Future<int>.error(const CustomException('Custom failure'));
-      final result = await future.asResult;
+      final result = await future.asResult();
       expect(result.isFailure, isTrue);
       expect(result.exceptionOrNull, isA<CustomException>());
       expect(result.exceptionOrNull.toString(), contains('Custom failure'));
@@ -263,12 +268,12 @@ void main() {
     test('asResult on failing future with non-Exception error throws',
         () async {
       final future = Future<int>.error('Non-exception error');
-      expect(future.asResult, throwsA(isA<String>()));
+      expect(future.asResult<Exception>(), throwsA(isA<String>()));
     });
 
     test('asResult converts delayed success to success', () async {
       final future = Future.delayed(const Duration(milliseconds: 50), () => 99);
-      final result = await future.asResult;
+      final result = await future.asResult();
       expect(result.isSuccess, isTrue);
       expect(result.getOrThrow, equals(99));
     });
@@ -278,7 +283,7 @@ void main() {
         const Duration(milliseconds: 50),
         () => throw Exception('Delayed failure'),
       );
-      final result = await future.asResult;
+      final result = await future.asResult();
       expect(result.isFailure, isTrue);
       expect(result.exceptionOrNull, isA<Exception>());
       expect(result.exceptionOrNull.toString(), contains('Delayed failure'));
@@ -294,8 +299,8 @@ void main() {
     });
 
     test('Future fold on failure computes fallback value', () async {
-      final futureResult =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureResult = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final folded = await futureResult.fold(
         onSuccess: (v) async => v * 2,
         onFailure: (e, st) async => -1,
@@ -310,11 +315,11 @@ void main() {
       expect(successResult, equals('OK'));
 
       final failureResult = await Future.value(
-              Result<String>.failure(const CustomException('err')))
+              Result<String, Exception>.failure(const CustomException('err')))
           .exceptionOrNull;
       expect(failureResult.toString(), contains('CustomException: err'));
 
-      final stacktrace = await Future.value(Result<String>.failure(
+      final stacktrace = await Future.value(Result<String, Exception>.failure(
               const CustomException('err'), StackTrace.current))
           .stacktraceOrNull;
       expect(stacktrace, isNotNull);
@@ -322,8 +327,8 @@ void main() {
       final value = await Future.value(const Result.success(42)).getOrThrow;
       expect(value, equals(42));
 
-      final futureFail =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFail = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       expect(
           () async => futureFail.getOrThrow, throwsA(isA<CustomException>()));
     });
@@ -336,9 +341,9 @@ void main() {
       expect(successFuture.getOrThrow, equals(5));
 
       Object? capturedFailure;
-      final failureFuture =
-          await Future.value(Result<int>.failure(const CustomException('fail')))
-              .onFailure((e, st) => capturedFailure = e);
+      final failureFuture = await Future.value(
+              Result<int, Exception>.failure(const CustomException('fail')))
+          .onFailure((e, st) => capturedFailure = e);
       expect(capturedFailure, isNotNull);
       expect(capturedFailure.toString(), contains('CustomException: fail'));
       expect(() => failureFuture.getOrThrow, throwsA(isA<CustomException>()));
@@ -349,8 +354,8 @@ void main() {
       final valueSuccess = await futureSuccess.getOrElse((e, st) async => 0);
       expect(valueSuccess, equals(10));
 
-      final futureFailure =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFailure = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final valueFailure = await futureFailure.getOrElse((e, st) async => 99);
       expect(valueFailure, equals(99));
 
@@ -358,16 +363,16 @@ void main() {
           await Future.value(const Result.success(10)).getOrDefault(100);
       expect(defaultSuccess, equals(10));
 
-      final defaultFailure =
-          await Future.value(Result<int>.failure(const CustomException('fail')))
-              .getOrDefault(100);
+      final defaultFailure = await Future.value(
+              Result<int, Exception>.failure(const CustomException('fail')))
+          .getOrDefault(100);
       expect(defaultFailure, equals(100));
     });
 
     test('Future recover and recoverCatching work as expected', () async {
       // recover transforms failure into a success value.
-      final futureFailure =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFailure = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final recovered = await futureFailure.recover((e, st) async => 55);
       expect(recovered.isSuccess, isTrue);
       expect(recovered.getOrThrow, equals(55));
@@ -379,16 +384,16 @@ void main() {
       expect(recoveredSuccess.getOrThrow, equals(77));
 
       // recoverCatching transforms failure to success.
-      final futureFailure2 =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFailure2 = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final recoveredCatching =
           await futureFailure2.recoverCatching((e, st) async => 88);
       expect(recoveredCatching.isSuccess, isTrue);
       expect(recoveredCatching.getOrThrow, equals(88));
 
       // recoverCatching catches exception in the recovery transform.
-      final futureFailure3 =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFailure3 = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final recoveredCatchingFail = await futureFailure3.recoverCatching(
           (e, st) async => throw const CustomException('recovery fail'));
       expect(recoveredCatchingFail.isFailure, isTrue);
@@ -415,13 +420,13 @@ void main() {
     });
 
     test('asResult on FutureOr values works correctly', () async {
-      final syncResult = await (42 as FutureOr<int>).asResult;
+      final syncResult = await (42 as FutureOr<int>).asResult();
       expect(syncResult.isSuccess, isTrue);
       expect(syncResult.getOrThrow, equals(42));
 
       final syncFailure =
           await Future.sync(() => throw const CustomException('sync error'))
-              .asResult;
+              .asResult();
       expect(syncFailure.isFailure, isTrue);
       expect(() => syncFailure.getOrThrow, throwsA(isA<CustomException>()));
     });
@@ -435,8 +440,8 @@ void main() {
       expect(mapped.getOrThrow, equals(20));
 
       // map propagates failure without transformation.
-      final futureFailureMap =
-          Future.value(Result<int>.failure(const CustomException('fail')));
+      final futureFailureMap = Future.value(
+          Result<int, Exception>.failure(const CustomException('fail')));
       final mappedFailure = await futureFailureMap.map<int>((v) async => v * 4);
       expect(mappedFailure.isFailure, isTrue);
 
